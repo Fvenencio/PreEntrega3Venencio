@@ -1,65 +1,96 @@
-function calcularEdadPromedio(edades) {
-  let suma = 0;
-
-  for (let i = 0; i < edades.length; i++) {
-    suma += edades[i];
-  }
-
-  let promedio = suma / edades.length;
-  return promedio;
-}
-
 let edades = [];
-let cantidad;
 
-do {
-  cantidad = parseInt(prompt("Ingrese la cantidad de personas:"));
-
-  if (cantidad < 1 || cantidad > 10000 || isNaN(cantidad)) {
-    alert("La cantidad ingresada no es válida. Debe ser un número entre 1 y 10000.");
-  }
-} while (cantidad < 1 || cantidad > 10000 || isNaN(cantidad));
-
-let i = 0;
-while (i < cantidad) {
-  let edad = parseInt(prompt(`Ingrese la edad de la persona ${i + 1}:`));
-
-  switch (true) {
-    case isNaN(edad):
-      alert("La edad ingresada no es un número válido.");
-      break;
-    case edad < 1:
-      alert("La edad ingresada no puede ser menor a 1.");
-      break;
-    case edad > 1000:
-      alert("La edad ingresada no puede ser mayor a 1000 años.");
-      break;
-    default:
-      edades.push(edad);
-      i++; 
-  }
+function borrarDatos() {
+  edades.length > 0 ? edades.pop() : null; // Elimina la última persona cargada
+  actualizarListaEdades();
 }
 
-if (edades.length === cantidad) {
-  let edadPromedio = calcularEdadPromedio(edades);
-  
-  let resultadoPromedio = document.createElement("p");
-  resultadoPromedio.textContent = "La edad promedio de las personas registradas es de: " + edadPromedio + "años";
+function resetearDatos() {
+  edades = [];
+  actualizarListaEdades();
+  document.getElementById('listaEdades').innerHTML = '';
+  document.getElementById('resultadoPromedio').textContent = '0';
+  document.getElementById('resultadoCantidad').textContent = '0';
+  localStorage.removeItem('edades');
+}
 
-  let resultadoCantidad = document.createElement("p");
-  resultadoCantidad.textContent = "Cantidad de personas registradas: " + cantidad;
+function calcularPromedio() {
+  const generoSeleccionado = document.querySelector('input[name="genero"]:checked');
+  !generoSeleccionado ? (alert('Seleccione un género'), false) : null;
 
-  let listaEdades = document.createElement("ul");
-  for (let j = 0; j < edades.length; j++) {
-    let itemEdad = document.createElement("li");
-    itemEdad.textContent = "Edad persona " + (j + 1) + ": " + edades[j] + "años" ;
+  let grupoEdades = edades; // Inicialmente, considero todas las edades ingresadas
+
+  const asunto = document.getElementById('asunto').value;
+  const genero = generoSeleccionado.value;
+  if (genero === 'Mujer' && asunto === 'laboral') {
+    grupoEdades = edades.filter(persona => persona.genero === 'Mujer' && persona.edad >= 18 && persona.edad <= 60); // Filtra las edades entre 18 y 60 (inclusive) para mujeres en etapa laboral
+  } else if (genero === 'Mujer' && asunto === 'jubilados') {
+    grupoEdades = edades.filter(persona => persona.genero === 'Mujer' && persona.edad >= 61 && persona.edad <= 150); // Filtra las edades entre 61 y 150 (inclusive) para mujeres jubiladas
+  } else if (asunto === 'menores') {
+    grupoEdades = edades.filter(persona => persona.edad < 18); // Filtra solo las edades menores de 18
+  } else if (asunto === 'laboral') {
+    grupoEdades = edades.filter(persona => persona.edad >= 18 && persona.edad <= 65); // Filtra las edades entre 18 y 65 (inclusive)
+  } else if (asunto === 'jubilados') {
+    grupoEdades = edades.filter(persona => persona.edad > 65 && persona.edad <= 150); // Filtra las edades entre 65 y 150 (inclusive)
+  }
+
+  grupoEdades.length > 0 ? (
+    document.getElementById('resultadoPromedio').textContent = (grupoEdades.reduce((acumulador, persona) => acumulador + persona.edad, 0) / grupoEdades.length).toFixed(2),
+    document.getElementById('resultadoCantidad').textContent = grupoEdades.length
+  ) : (
+    document.getElementById('resultadoPromedio').textContent = '0',
+    document.getElementById('resultadoCantidad').textContent = '0'
+  );
+  // Guarda los datos en el LocalStorage
+  localStorage.setItem('edades', JSON.stringify(edades));
+}
+// Obtenengo los datos guardados del LocalStorage al cargar la página de nuevo
+window.addEventListener('DOMContentLoaded', function () {
+  const edadesGuardadas = localStorage.getItem('edades');
+  edadesGuardadas ? (
+    edades = JSON.parse(edadesGuardadas),
+    actualizarListaEdades()
+  ) : null;
+});
+
+function actualizarListaEdades() {
+  const listaEdades = document.getElementById('listaEdades');
+  listaEdades.innerHTML = ''; // Limpia la lista
+  for (const persona of edades) {
+    const itemEdad = document.createElement('li');
+    itemEdad.textContent = "Nombre: " + persona.nombre + " | Género: " + persona.genero + " | Edad: " + persona.edad + " años";
+    itemEdad.classList.add('list-group-item');
     listaEdades.appendChild(itemEdad);
   }
-
-  let lista = document.createElement("div");
-  lista.appendChild(resultadoCantidad);
-  lista.appendChild(listaEdades);
-  lista.appendChild(resultadoPromedio);
-
-  document.body.appendChild(lista);
+  // Guarda los datos en el LocalStorage
+  localStorage.setItem('edades', JSON.stringify(edades));
 }
+
+document.getElementById('formularioPersonas').addEventListener('submit', function (e) {
+  e.preventDefault();
+
+  const generoSeleccionado = document.querySelector('input[name="genero"]:checked');
+  !generoSeleccionado ? (alert('Seleccione un género'), false) : null; // Detieme la ejecución de la función si no se selecciono un género
+
+  const genero = generoSeleccionado.value;
+  const nombre = document.getElementById('nombre').value;
+  const edad = parseInt(document.getElementById('edad').value);
+
+  (edad < 1 || edad > 150) ? (alert('La edad debe ser entre 1 y 150 años'), false) : null; // Detiene la ejecución de la función, si la edad no está en el rango válido
+
+  const persona = { nombre, genero, edad };
+  edades.push(persona);
+
+  document.getElementById('nombre').value = '';
+  document.getElementById('edad').value = '';
+
+  actualizarListaEdades();
+});
+
+document.getElementById('btnBorrar').addEventListener('click', function () {
+  borrarDatos();
+});
+
+document.getElementById('btnResetear').addEventListener('click', function () {
+  resetearDatos();
+});
