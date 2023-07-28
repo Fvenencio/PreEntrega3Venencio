@@ -18,7 +18,7 @@ function cargarDatosDesdeJSON() {
   const xhr = new XMLHttpRequest();
   xhr.overrideMimeType('application/json');
   xhr.open('GET', 'storage.json', true);
-  xhr.onreadystatechange = function() {
+  xhr.onreadystatechange = function () {
     if (xhr.readyState === 4 && xhr.status === 200) {
       // Parsea el contenido del archivo JSON y asigna los datos a la lista 'edades'
       edades = JSON.parse(xhr.responseText);
@@ -110,6 +110,15 @@ document.getElementById('formularioPersonas').addEventListener('submit', functio
   document.getElementById('edad').value = '';
 
   actualizarListaEdades();
+
+  Swal.fire({
+    position: 'top-end',
+    icon: 'success',
+    title: 'La persona se cargó correctamente',
+    showConfirmButton: false,
+    timer: 1500
+  });
+
 });
 
 document.getElementById('btnBorrar').addEventListener('click', function () {
