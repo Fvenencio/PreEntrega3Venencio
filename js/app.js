@@ -90,7 +90,11 @@ document.getElementById('formularioPersonas').addEventListener('submit', functio
 
   const generoSeleccionado = document.querySelector('input[name="genero"]:checked');
   if (!generoSeleccionado) {
-    alert('Seleccione un género');
+    Swal.fire({
+      icon: 'error',
+      title: 'Error',
+      text: 'Seleccione un género',
+    });
     return; // Detiene la ejecución de la función si no se seleccionó un género
   }
 
@@ -99,7 +103,11 @@ document.getElementById('formularioPersonas').addEventListener('submit', functio
   const edad = parseInt(document.getElementById('edad').value);
 
   if (edad < 1 || edad > 150) {
-    alert('La edad debe estar entre 1 y 150 años');
+    Swal.fire({
+      icon: 'error',
+      title: 'Error',
+      text: 'La edad debe estar entre 1 y 150 años',
+    });
     return; // Detiene la ejecución de la función si la edad no está en el rango válido
   }
 
