@@ -5,14 +5,6 @@ function borrarDatos() {
   actualizarListaEdades();
 }
 
-function resetearDatos() {
-  edades = [];
-  actualizarListaEdades();
-  document.getElementById('listaEdades').innerHTML = '';
-  document.getElementById('resultadoPromedio').textContent = '0';
-  document.getElementById('resultadoCantidad').textContent = '0';
-  enviarDatosAlServidor();
-}
 
 function resetearDatos() {
   Swal.fire({
@@ -190,10 +182,18 @@ cargarDatosDesdeJSON()
     console.error(error);
   });
 
-window.addEventListener('DOMContentLoaded', function () {
-  const edadesGuardadas = localStorage.getItem('edades');
-  if (edadesGuardadas) {
-    edades = JSON.parse(edadesGuardadas);
-    actualizarListaEdades();
-  }
-});
+  window.addEventListener('DOMContentLoaded', function () {
+    cargarDatosDesdeJSON()
+      .then(() => {
+        console.log('Datos cargados exitosamente.');
+      })
+      .catch((error) => {
+        console.error(error);
+      });
+  
+    const edadesGuardadas = localStorage.getItem('edades');
+    if (edadesGuardadas) {
+      edades = JSON.parse(edadesGuardadas);
+      actualizarListaEdades();
+    }
+  });
