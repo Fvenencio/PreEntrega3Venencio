@@ -1,7 +1,7 @@
 let edades = [];
 
 function borrarDatos() {
-  edades.length > 0 ? edades.pop() : null; // Elimina la última persona cargada
+  edades.length > 0 ? edades.pop() : null;
   actualizarListaEdades();
 }
 
@@ -11,21 +11,79 @@ function resetearDatos() {
   document.getElementById('listaEdades').innerHTML = '';
   document.getElementById('resultadoPromedio').textContent = '0';
   document.getElementById('resultadoCantidad').textContent = '0';
+  enviarDatosAlServidor();
+}
+
+function resetearDatos() {
+  Swal.fire({
+    title: '¿Estás seguro?',
+    text: '¡Esta acción eliminará la lista completa!',
+    icon: 'warning',
+    showCancelButton: true,
+    confirmButtonColor: '#3085d6',
+    cancelButtonColor: '#d33',
+    confirmButtonText: 'Sí, eliminarla'
+  }).then((result) => {
+    if (result.isConfirmed) {
+      edades = [];
+      actualizarListaEdades();
+      document.getElementById('listaEdades').innerHTML = '';
+      document.getElementById('resultadoPromedio').textContent = '0';
+      document.getElementById('resultadoCantidad').textContent = '0';
+      enviarDatosAlServidor();
+      Swal.fire(
+        '¡Eliminada!',
+        'La lista ha sido eliminada.',
+        'success'
+      );
+    }
+  });
+}
+
+
+function enviarDatosAlServidor() {
+  // Crea un objeto XMLHttpRequest
+  const xhr = new XMLHttpRequest();
+  xhr.open('POST', '/guardarDatos', true);
+  xhr.setRequestHeader('Content-Type', 'application/json');
+
+  // Escucha el evento 'load' que indica que la solicitud se completó
+  xhr.onload = function () {
+    if (xhr.status === 200) {
+      console.log('Datos guardados correctamente.');
+    } else {
+      console.error('Error al guardar los datos.');
+    }
+  };
+
+  // Maneja el evento 'error' en caso de que ocurra un error de red
+  xhr.onerror = function () {
+    console.error('Error de red al intentar guardar los datos.');
+  };
+
+  // Envía los datos al servidor como un objeto JSON
+  xhr.send(JSON.stringify(edades));
 }
 
 function cargarDatosDesdeJSON() {
-  // Realizo una solicitud AJAX para obtener los datos del archivo JSON
-  const xhr = new XMLHttpRequest();
-  xhr.overrideMimeType('application/json');
-  xhr.open('GET', 'storage.json', true);
-  xhr.onreadystatechange = function () {
-    if (xhr.readyState === 4 && xhr.status === 200) {
-      // Parsea el contenido del archivo JSON y asigna los datos a la lista 'edades'
-      edades = JSON.parse(xhr.responseText);
-      actualizarListaEdades();
-    }
-  };
-  xhr.send(null);
+  return new Promise((resolve, reject) => {
+    const xhr = new XMLHttpRequest();
+    xhr.overrideMimeType('application/json');
+    xhr.open('GET', '/obtenerDatos', true);
+    xhr.onreadystatechange = function () {
+      if (xhr.readyState === 4) {
+        if (xhr.status === 200) {
+          // Parsea el contenido del archivo JSON y asigna los datos a la lista 'edades'
+          edades = JSON.parse(xhr.responseText);
+          actualizarListaEdades();
+          resolve(); // Resuelve la promesa en caso de éxito
+        } else {
+          reject(new Error('Error al cargar datos desde JSON')); // Rechaza la promesa en caso de error
+        }
+      }
+    };
+    xhr.send(null);
+  });
 }
 
 function calcularPromedio() {
@@ -62,14 +120,15 @@ window.addEventListener('DOMContentLoaded', function () {
   cargarDatosDesdeJSON();
 });
 
-// Obtenengo los datos guardados del LocalStorage al cargar la página de nuevo
 window.addEventListener('DOMContentLoaded', function () {
-  cargarDatosDesdeJSON();
-  const edadesGuardadas = localStorage.getItem('edades');
-  edadesGuardadas ? (
-    edades = JSON.parse(edadesGuardadas),
-    actualizarListaEdades()
-  ) : null;
+  // Utilizamos la promesa para cargar los datos desde el JSON
+  cargarDatosDesdeJSON()
+    .then(() => {
+      console.log('Datos cargados exitosamente.');
+    })
+    .catch((error) => {
+      console.error(error); // Manejamos el error en caso de que ocurra al cargar los datos
+    });
 });
 
 function actualizarListaEdades() {
@@ -129,10 +188,22 @@ document.getElementById('formularioPersonas').addEventListener('submit', functio
 
 });
 
-document.getElementById('btnBorrar').addEventListener('click', function () {
-  borrarDatos();
-});
+// Utilizamos la promesa para cargar los datos desde el JSON
+cargarDatosDesdeJSON()
+  .then(() => {
+    // Aquí se ejecuta después de que los datos se hayan cargado correctamente
+    console.log('Datos cargados exitosamente.');
+  })
+  .catch((error) => {
+    // Aquí se maneja el error en caso de que ocurra al cargar los datos
+    console.error(error);
+  });
 
-document.getElementById('btnResetear').addEventListener('click', function () {
-  resetearDatos();
+// Obtenengo los datos guardados del LocalStorage al cargar la página de nuevo
+window.addEventListener('DOMContentLoaded', function () {
+  const edadesGuardadas = localStorage.getItem('edades');
+  if (edadesGuardadas) {
+    edades = JSON.parse(edadesGuardadas);
+    actualizarListaEdades();
+  }
 });
