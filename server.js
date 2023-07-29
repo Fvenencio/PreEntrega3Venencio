@@ -6,7 +6,7 @@ const port = 3000;
 app.use(express.static('public'));
 app.use(express.json());
 
-app.get('/obtenerDatos', (req, res) => {
+app.get('/js/storage.json', (req, res) => {
   fs.readFile('/js/storage.json', 'utf8', (err, data) => {
     if (err) {
       res.status(500).send({ error: 'Error al leer los datos.' });
@@ -21,7 +21,7 @@ app.get('/obtenerDatos', (req, res) => {
   });
 });
 
-app.post('/guardarPersona', (req, res) => {
+app.post('/js/storage.json', (req, res) => {
   const persona = req.body;
   fs.readFile('/js/storage.json', 'utf8', (err, data) => {
     if (err) {

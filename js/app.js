@@ -40,14 +40,11 @@ function resetearDatos() {
   });
 }
 
-
 function enviarDatosAlServidor() {
   // Crea un objeto XMLHttpRequest
   const xhr = new XMLHttpRequest();
   xhr.open('POST', '/guardarDatos', true);
-  xhr.setRequestHeader('Content-Type', 'application/json');
-
-  // Escucha el evento 'load' que indica que la solicitud se completó
+  xhr.setRequestHeader('Content-Type', '/js/storage.json');
   xhr.onload = function () {
     if (xhr.status === 200) {
       console.log('Datos guardados correctamente.');
@@ -68,13 +65,11 @@ function enviarDatosAlServidor() {
 function cargarDatosDesdeJSON() {
   return new Promise((resolve, reject) => {
     const xhr = new XMLHttpRequest();
-    xhr.overrideMimeType('application/json');
-    xhr.open('GET', '/obtenerDatos', true);
+    xhr.overrideMimeType('/js/storage.json');
+    xhr.open('GET', '/js/storage.json', true);
     xhr.onreadystatechange = function () {
       if (xhr.readyState === 4) {
         if (xhr.status === 200) {
-          // Parsea el contenido del archivo JSON y asigna los datos a la lista 'edades'
-          edades = JSON.parse(xhr.responseText);
           actualizarListaEdades();
           resolve(); // Resuelve la promesa en caso de éxito
         } else {
@@ -121,13 +116,12 @@ window.addEventListener('DOMContentLoaded', function () {
 });
 
 window.addEventListener('DOMContentLoaded', function () {
-  // Utilizamos la promesa para cargar los datos desde el JSON
   cargarDatosDesdeJSON()
     .then(() => {
       console.log('Datos cargados exitosamente.');
     })
     .catch((error) => {
-      console.error(error); // Manejamos el error en caso de que ocurra al cargar los datos
+      console.error(error);
     });
 });
 
@@ -188,18 +182,14 @@ document.getElementById('formularioPersonas').addEventListener('submit', functio
 
 });
 
-// Utilizamos la promesa para cargar los datos desde el JSON
 cargarDatosDesdeJSON()
   .then(() => {
-    // Aquí se ejecuta después de que los datos se hayan cargado correctamente
     console.log('Datos cargados exitosamente.');
   })
   .catch((error) => {
-    // Aquí se maneja el error en caso de que ocurra al cargar los datos
     console.error(error);
   });
 
-// Obtenengo los datos guardados del LocalStorage al cargar la página de nuevo
 window.addEventListener('DOMContentLoaded', function () {
   const edadesGuardadas = localStorage.getItem('edades');
   if (edadesGuardadas) {
